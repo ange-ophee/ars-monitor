@@ -1,7 +1,8 @@
-const Monitoring = require('../models/monitoringModel');
-const { createNotificationLogic } = require("../services/notificationService");
+const Monitoring = require("../models/monitoringModel");
 
-// CREATE MONITORING RECORD
+/**
+ * CREATE MONITORING RECORD
+ */
 exports.createMonitoring = (req, res) => {
 
     const {
@@ -16,7 +17,16 @@ exports.createMonitoring = (req, res) => {
     } = req.body;
 
     Monitoring.create(
-        [farm_id, auditor_id, inspection_date, observations, disease_presence, environmental_conditions, production_status, monitoring_status],
+        [
+            farm_id,
+            auditor_id,
+            inspection_date,
+            observations,
+            disease_presence,
+            environmental_conditions,
+            production_status,
+            monitoring_status
+        ],
         (err, result) => {
 
             if (err) {
@@ -31,15 +41,12 @@ exports.createMonitoring = (req, res) => {
         }
     );
 
-    await createNotificationLogic({
-        user_id: farmerUserId,
-        message: `New monitoring completed on your farm "${farmName}"`,
-        notification_type: "monitoring"
-    });
-
 };
 
-// GET ALL MONITORING RECORDS
+
+/**
+ * GET ALL MONITORING RECORDS
+ */
 exports.getAllMonitoring = (req, res) => {
 
     Monitoring.getAll((err, results) => {
@@ -54,7 +61,10 @@ exports.getAllMonitoring = (req, res) => {
 
 };
 
-// GET BY FARM
+
+/**
+ * GET MONITORING RECORDS BY FARM
+ */
 exports.getByFarm = (req, res) => {
 
     const farmId = req.params.farmId;
@@ -71,7 +81,10 @@ exports.getByFarm = (req, res) => {
 
 };
 
-// GET BY ID
+
+/**
+ * GET MONITORING RECORD BY ID
+ */
 exports.getById = (req, res) => {
 
     const id = req.params.id;
@@ -82,13 +95,22 @@ exports.getById = (req, res) => {
             return res.status(500).json(err);
         }
 
+        if (!result.length) {
+            return res.status(404).json({
+                message: "Monitoring record not found"
+            });
+        }
+
         res.status(200).json(result[0]);
 
     });
 
 };
 
-// UPDATE
+
+/**
+ * UPDATE MONITORING RECORD
+ */
 exports.updateMonitoring = (req, res) => {
 
     const id = req.params.id;
@@ -104,14 +126,27 @@ exports.updateMonitoring = (req, res) => {
 
     Monitoring.update(
         id,
-        [inspection_date, observations, disease_presence, environmental_conditions, production_status, monitoring_status],
-        (err) => {
+        [
+            inspection_date,
+            observations,
+            disease_presence,
+            environmental_conditions,
+            production_status,
+            monitoring_status
+        ],
+        (err, result) => {
 
             if (err) {
                 return res.status(500).json(err);
             }
 
-            res.json({
+            if (result.affectedRows === 0) {
+                return res.status(404).json({
+                    message: "Monitoring record not found"
+                });
+            }
+
+            res.status(200).json({
                 message: "Monitoring record updated successfully"
             });
 
@@ -120,18 +155,27 @@ exports.updateMonitoring = (req, res) => {
 
 };
 
-// DELETE
+
+/**
+ * DELETE MONITORING RECORD
+ */
 exports.deleteMonitoring = (req, res) => {
 
     const id = req.params.id;
 
-    Monitoring.delete(id, (err) => {
+    Monitoring.delete(id, (err, result) => {
 
         if (err) {
             return res.status(500).json(err);
         }
 
-        res.json({
+        if (result.affectedRows === 0) {
+            return res.status(404).json({
+                message: "Monitoring record not found"
+            });
+        }
+
+        res.status(200).json({
             message: "Monitoring record deleted successfully"
         });
 

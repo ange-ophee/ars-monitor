@@ -7,6 +7,7 @@ import { FaUsers, FaSeedling, FaClipboardCheck, FaChartLine, FaExclamationTriang
 
 function Dashboard() {
 
+
   const [summary, setSummary] = useState({});
   const [complianceData, setComplianceData] = useState([]);
   const [evaluationData, setEvaluationData] = useState([]);
@@ -56,11 +57,11 @@ function Dashboard() {
         <div>
 
           <h1 style={styles.pageTitle}>
-            Dashboard Overview
+            Tableau de Bord
           </h1>
 
           <p style={styles.subtitle}>
-            ARS 1000 Monitoring & Compliance Management Platform
+            Plateforme de Surveillance et de Gestion de la Norme ARS 1000
           </p>
 
         </div>
@@ -74,25 +75,25 @@ function Dashboard() {
         <div style={styles.kpiCard}>
           <FaUsers size={28} />
           <h3>{summary.totalFarmers || 0}</h3>
-          <p>Total Farmers</p>
+          <p>Total des Agriculteurs</p>
         </div>
 
         <div style={styles.kpiCard}>
           <FaSeedling size={28} />
           <h3>{summary.totalFarms || 0}</h3>
-          <p>Total Farms</p>
+          <p>Total des Fermes</p>
         </div>
 
         <div style={styles.kpiCard}>
           <FaClipboardCheck size={28} />
           <h3>{summary.totalMonitoring || 0}</h3>
-          <p>Monitoring Records</p>
+          <p>Enregistrements de Surveillance</p>
         </div>
 
         <div style={styles.kpiCard}>
           <FaChartLine size={28} />
           <h3>{summary.totalEvaluations || 0}</h3>
-          <p>Evaluations</p>
+          <p>Évaluations</p>
         </div>
 
       </div>
@@ -103,7 +104,7 @@ function Dashboard() {
 
         <div style={styles.card}>
 
-          <h3>Compliance Trend</h3>
+          <h3>Tendance de Conformité</h3>
 
           <ResponsiveContainer width="100%" height={300}>
 

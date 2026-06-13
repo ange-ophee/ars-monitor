@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 exports.verifyToken = (req, res, next) => {
-
     const authHeader = req.headers['authorization'];
 
     if (!authHeader) {
@@ -19,19 +19,19 @@ exports.verifyToken = (req, res, next) => {
     }
 
     try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        const decoded = jwt.verify(token, 'secretkey');
-
-        req.user = decoded;
+        req.user = {
+            id: decoded.id,
+            role_id: decoded.role_id,
+            role_name: decoded.role_name
+        };
 
         next();
 
     } catch (error) {
-
-        res.status(403).json({
+        return res.status(403).json({
             message: 'Invalid or expired token.'
         });
-
     }
-
 };

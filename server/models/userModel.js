@@ -13,12 +13,19 @@ const User = {
     },
 
     findUserByEmail: (email, callback) => {
+
         const sql = `
-            SELECT * FROM users
-            WHERE email = ?
+            SELECT
+                users.*,
+                roles.role_name
+            FROM users
+            INNER JOIN roles
+                ON users.role_id = roles.id
+            WHERE users.email = ?
         `;
 
         db.query(sql, [email], callback);
+
     }
 
 };

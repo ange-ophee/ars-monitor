@@ -1,5 +1,4 @@
-const Evaluation = require('../models/evaluationModel');
-const { createNotificationLogic } = require("../services/notificationService");
+const Evaluation = require("../models/evaluationModel");
 
 // CREATE EVALUATION
 exports.createEvaluation = (req, res) => {
@@ -15,7 +14,15 @@ exports.createEvaluation = (req, res) => {
     } = req.body;
 
     Evaluation.create(
-        [farm_id, evaluator_id, evaluation_date, compliance_score, evaluation_status, recommendations, corrective_actions],
+        [
+            farm_id,
+            evaluator_id,
+            evaluation_date,
+            compliance_score,
+            evaluation_status,
+            recommendations,
+            corrective_actions
+        ],
         (err, result) => {
 
             if (err) {
@@ -30,13 +37,8 @@ exports.createEvaluation = (req, res) => {
         }
     );
 
-    await createNotificationLogic({
-        user_id: farmerUserId,
-        message: `Your farm was evaluated. Score: ${compliance_score}%`,
-        notification_type: "evaluation"
-    });
-
 };
+
 
 // GET ALL
 exports.getAllEvaluations = (req, res) => {
@@ -52,6 +54,7 @@ exports.getAllEvaluations = (req, res) => {
     });
 
 };
+
 
 // GET BY FARM
 exports.getByFarm = (req, res) => {
@@ -70,6 +73,7 @@ exports.getByFarm = (req, res) => {
 
 };
 
+
 // GET BY ID
 exports.getById = (req, res) => {
 
@@ -81,11 +85,18 @@ exports.getById = (req, res) => {
             return res.status(500).json(err);
         }
 
+        if (!result.length) {
+            return res.status(404).json({
+                message: "Evaluation not found"
+            });
+        }
+
         res.status(200).json(result[0]);
 
     });
 
 };
+
 
 // UPDATE
 exports.updateEvaluation = (req, res) => {
@@ -102,14 +113,20 @@ exports.updateEvaluation = (req, res) => {
 
     Evaluation.update(
         id,
-        [evaluation_date, compliance_score, evaluation_status, recommendations, corrective_actions],
+        [
+            evaluation_date,
+            compliance_score,
+            evaluation_status,
+            recommendations,
+            corrective_actions
+        ],
         (err) => {
 
             if (err) {
                 return res.status(500).json(err);
             }
 
-            res.json({
+            res.status(200).json({
                 message: "Evaluation updated successfully"
             });
 
@@ -117,6 +134,7 @@ exports.updateEvaluation = (req, res) => {
     );
 
 };
+
 
 // DELETE
 exports.deleteEvaluation = (req, res) => {
@@ -129,7 +147,7 @@ exports.deleteEvaluation = (req, res) => {
             return res.status(500).json(err);
         }
 
-        res.json({
+        res.status(200).json({
             message: "Evaluation deleted successfully"
         });
 

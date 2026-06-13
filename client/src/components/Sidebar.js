@@ -10,6 +10,9 @@ function Sidebar() {
     { path: "/evaluations", label: "Evaluations" },
     { path: "/reports", label: "Reports" }
   ];
+  const user = JSON.parse(
+        localStorage.getItem("user")
+    );
 
   return (
 
@@ -50,6 +53,22 @@ function Sidebar() {
 
         ))}
 
+      </div>
+
+       <div style={styles.profile}>
+        <div style={styles.avatar}>
+          {user?.full_name?.charAt(0) || "U"}
+        </div>
+
+        <div>
+          <h3 style={{ margin: 0 }}>
+            Welcome, {user?.full_name}
+          </h3>
+
+          <p style={{ margin: 0, fontSize: "13px", color: "#ccc" }}>
+            Role: {user?.role_name}
+          </p>
+        </div>
       </div>
 
       {/* FOOTER */}
@@ -106,7 +125,29 @@ const styles = {
   footer: {
     color: "#888",
     fontSize: "13px"
-  }
+  },
+
+  profile: {
+  display: "flex",
+  alignItems: "center",
+  gap: "12px",
+  padding: "15px",
+  borderTop: "1px solid rgba(255,255,255,0.1)",
+  borderBottom: "1px solid rgba(255,255,255,0.1)"
+},
+
+avatar: {
+  width: "45px",
+  height: "45px",
+  borderRadius: "50%",
+  background: "#C9A227",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  fontWeight: "bold",
+  color: "#000",
+  fontSize: "18px"
+}
 
 };
 

@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import API from "../services/api";
 
 function Auth() {
 
   const navigate = useNavigate();
 
   const [isLogin, setIsLogin] = useState(true);
-
   const [showPassword, setShowPassword] = useState(false);
 
   const [form, setForm] = useState({
@@ -24,9 +24,42 @@ function Auth() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    navigate("/dashboard");
+
+    try {
+
+      // ======================
+      // LOGIN
+      // ======================
+      const response = await API.post(
+        "/auth/login",
+        {
+          email: form.email,
+          password: form.password
+        }
+      );
+
+      // SAFE STORAGE
+      localStorage.setItem("token", response.data.token);
+
+      // IMPORTANT: ensure user exists
+      localStorage.setItem(
+        "user",
+        JSON.stringify(response.data.user || {})
+      );
+
+      navigate("/dashboard");
+
+    } catch (error) {
+
+      alert(
+        error.response?.data?.message ||
+        "Login failed"
+      );
+
+    }
+
   };
 
   return (
@@ -38,9 +71,7 @@ function Auth() {
       <div style={styles.authWrapper}>
 
         {/* LEFT PANEL */}
-
         <div style={styles.leftPanel}>
-
           <div style={styles.leftContent}>
 
             <h1 style={styles.brand}>
@@ -53,35 +84,20 @@ function Auth() {
             </p>
 
             <div style={styles.features}>
-
-              <div style={styles.feature}>
-                ✓ Monitoring Agricole
-              </div>
-
-              <div style={styles.feature}>
-                ✓ Évaluation Durable
-              </div>
-
-              <div style={styles.feature}>
-                ✓ Audits de Conformité
-              </div>
-
-              <div style={styles.feature}>
-                ✓ Traçabilité du Cacao
-              </div>
-
+              <div style={styles.feature}>✓ Monitoring Agricole</div>
+              <div style={styles.feature}>✓ Évaluation Durable</div>
+              <div style={styles.feature}>✓ Audits de Conformité</div>
+              <div style={styles.feature}>✓ Traçabilité du Cacao</div>
             </div>
 
           </div>
-
         </div>
 
         {/* RIGHT PANEL */}
         <div style={styles.rightPanel}>
-        
+
           <div style={styles.card}>
 
-            {/* HEADER */}
             <div style={{ marginBottom: "20px" }}>
               <h2 style={styles.title}>
                 {isLogin ? "Connexion" : "Créer un compte"}
@@ -97,12 +113,12 @@ function Auth() {
             {/* FORM */}
             <form onSubmit={handleSubmit}>
 
-              {/* FULL NAME (register only) */}
+              {/* FULL NAME (REGISTER ONLY) */}
               {!isLogin && (
                 <input
-                  name="name"
+                  name="full_name"
                   placeholder="Nom complet"
-                  value={form.name}
+                  value={form.full_name}
                   onChange={handleChange}
                   style={styles.input}
                 />
@@ -117,22 +133,22 @@ function Auth() {
                 style={styles.input}
               />
 
-              {/* PHONE (register only) */}
+              {/* PHONE */}
               {!isLogin && (
                 <input
                   name="phone"
                   placeholder="Téléphone"
-                  value={form.phone || ""}
+                  value={form.phone}
                   onChange={handleChange}
                   style={styles.input}
                 />
               )}
 
-              {/* ROLE SELECT (register only - IMPORTANT FOR YOUR BACKEND) */}
+              {/* ROLE */}
               {!isLogin && (
                 <select
                   name="role_id"
-                  value={form.role_id || ""}
+                  value={form.role_id}
                   onChange={handleChange}
                   style={{
                     ...styles.input,
@@ -168,7 +184,7 @@ function Auth() {
                 </button>
               </div>
 
-              {/* OPTIONS (login only makes sense here) */}
+              {/* LOGIN OPTIONS */}
               {isLogin && (
                 <div style={styles.optionsRow}>
                   <label style={styles.checkboxLabel}>
@@ -186,13 +202,12 @@ function Auth() {
               <button type="submit" style={styles.button}>
                 {isLogin ? "Se connecter" : "Créer le compte"}
               </button>
+
             </form>
 
             {/* SWITCH */}
             <p style={styles.switchText}>
-              {isLogin
-                ? "Pas encore de compte ?"
-                : "Déjà un compte ?"}
+              {isLogin ? "Pas encore de compte ?" : "Déjà un compte ?"}
 
               <span
                 style={styles.switchLink}
@@ -203,7 +218,6 @@ function Auth() {
             </p>
 
           </div>
-
         </div>
 
       </div>
@@ -211,7 +225,6 @@ function Auth() {
     </div>
 
   );
-
 }
 
 const styles = {

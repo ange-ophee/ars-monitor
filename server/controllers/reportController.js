@@ -1,10 +1,9 @@
 const Report = require("../models/reportModel");
 const { createNotificationLogic } = require("../services/notificationService");
 
-
-// ======================
-// CREATE REPORT
-// ======================
+/**
+ * CREATE REPORT
+ */
 exports.createReport = async (req, res) => {
 
     try {
@@ -23,11 +22,17 @@ exports.createReport = async (req, res) => {
                     return res.status(500).json(err);
                 }
 
-                await createNotificationLogic({
-                    user_id: generated_by,
-                    message: `A new ${report_type} report has been generated`,
-                    notification_type: "report"
-                });
+                try {
+
+                    await createNotificationLogic({
+                        user_id: generated_by,
+                        message: `A new ${report_type} report has been generated`,
+                        notification_type: "report"
+                    });
+
+                } catch (notificationError) {
+                    console.log(notificationError);
+                }
 
                 res.status(201).json({
                     message: "Report created successfully",
@@ -39,19 +44,16 @@ exports.createReport = async (req, res) => {
 
     } catch (error) {
 
-        res.status(500).json({
-            message: "Server error",
-            error
-        });
+        res.status(500).json(error);
 
     }
 
 };
 
 
-// ======================
-// GET ALL REPORTS
-// ======================
+/**
+ * GET ALL REPORTS
+ */
 exports.getAllReports = (req, res) => {
 
     Report.getAll((err, results) => {
@@ -67,15 +69,21 @@ exports.getAllReports = (req, res) => {
 };
 
 
-// ======================
-// GET REPORT BY ID
-// ======================
+/**
+ * GET REPORT BY ID
+ */
 exports.getReportById = (req, res) => {
 
     Report.getById(req.params.id, (err, result) => {
 
         if (err) {
             return res.status(500).json(err);
+        }
+
+        if (!result.length) {
+            return res.status(404).json({
+                message: "Report not found"
+            });
         }
 
         res.status(200).json(result[0]);
@@ -85,22 +93,19 @@ exports.getReportById = (req, res) => {
 };
 
 
-// ======================
-// UPDATE REPORT
-// ======================
+/**
+ * UPDATE REPORT
+ */
 exports.updateReport = (req, res) => {
 
-    const { id } = req.params;
-
     const {
-        generated_by,
         report_type,
         report_content
     } = req.body;
 
     Report.update(
-        id,
-        [generated_by, report_type, report_content],
+        req.params.id,
+        [report_type, report_content],
         (err, result) => {
 
             if (err) {
@@ -117,9 +122,9 @@ exports.updateReport = (req, res) => {
 };
 
 
-// ======================
-// DELETE REPORT
-// ======================
+/**
+ * DELETE REPORT
+ */
 exports.deleteReport = (req, res) => {
 
     Report.delete(req.params.id, (err, result) => {
