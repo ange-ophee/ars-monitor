@@ -1,0 +1,34 @@
+:root {
+  --green: #1B5E20;        /* Deep Green - sustainability */
+  --brown: #5D4037;        /* Cocoa Brown - agriculture */
+  --gold: #C9A227;        /* Certification */
+  --white: #FFFFFF;       /* Clean UI */
+  --gray: #2E2E2E;        /* Professional text */
+  --light-bg: #F6F7F9;    /* Dashboard background */
+}
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: var(--light-bg);
+  color: var(--gray);
+}
+
+/* Smooth UI feel */
+* {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Card system */
+.card {
+  background: var(--white);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+/* Hover animation */
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
+}
