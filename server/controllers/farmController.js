@@ -1,115 +1,144 @@
-const Farm = require('../models/farmModel');
+const farmModel = require("../models/farmModel");
 
-// CREATE FARM
-exports.createFarm = (req, res) => {
+exports.getFarms = async (req, res) => {
+  try {
 
-    const {
-        farmer_id,
-        farm_name,
-        location,
-        gps_coordinates,
-        farm_size,
-        production_capacity,
-        status
-    } = req.body;
+    const farms =
+      await farmModel.getAllFarms();
 
-    Farm.create(
-        [farmer_id, farm_name, location, gps_coordinates, farm_size, production_capacity, status],
-        (err, result) => {
+    res.status(200).json(farms);
 
-            if (err) {
-                return res.status(500).json(err);
-            }
+  } catch (error) {
 
-            res.status(201).json({
-                message: "Farm created successfully",
-                farmId: result.insertId
-            });
+    res.status(500).json({
+      message: error.message
+    });
 
-        }
+  }
+};
+
+exports.getFarmById = async (req, res) => {
+  try {
+
+    const farm =
+      await farmModel.getFarmById(
+        req.params.id
+      );
+
+    if (!farm) {
+      return res.status(404).json({
+        message: "Farm not found"
+      });
+    }
+
+    res.status(200).json(farm);
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+
+exports.createFarm = async (req, res) => {
+  try {
+
+    const result =
+      await farmModel.createFarm(
+        req.body
+      );
+
+    res.status(201).json({
+      message: "Farm created successfully",
+      farmId: result.insertId
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+
+exports.updateFarm = async (req, res) => {
+  try {
+
+    await farmModel.updateFarm(
+      req.params.id,
+      req.body
     );
 
-};
-
-// GET ALL FARMS
-exports.getAllFarms = (req, res) => {
-
-    Farm.getAll((err, results) => {
-
-        if (err) {
-            return res.status(500).json(err);
-        }
-
-        res.status(200).json(results);
-
+    res.status(200).json({
+      message: "Farm updated successfully"
     });
 
-};
+  } catch (error) {
 
-// GET FARM BY ID
-exports.getFarmById = (req, res) => {
-
-    const id = req.params.id;
-
-    Farm.getById(id, (err, result) => {
-
-        if (err) {
-            return res.status(500).json(err);
-        }
-
-        res.status(200).json(result[0]);
-
+    res.status(500).json({
+      message: error.message
     });
 
+  }
 };
 
-// UPDATE FARM
-exports.updateFarm = (req, res) => {
+exports.deleteFarm = async (req, res) => {
+  try {
 
-    const id = req.params.id;
-
-    const {
-        farm_name,
-        location,
-        gps_coordinates,
-        farm_size,
-        production_capacity,
-        status
-    } = req.body;
-
-    Farm.update(
-        id,
-        [farm_name, location, gps_coordinates, farm_size, production_capacity, status],
-        (err) => {
-
-            if (err) {
-                return res.status(500).json(err);
-            }
-
-            res.json({
-                message: "Farm updated successfully"
-            });
-
-        }
+    await farmModel.deleteFarm(
+      req.params.id
     );
 
-};
-
-// DELETE FARM
-exports.deleteFarm = (req, res) => {
-
-    const id = req.params.id;
-
-    Farm.delete(id, (err) => {
-
-        if (err) {
-            return res.status(500).json(err);
-        }
-
-        res.json({
-            message: "Farm deleted successfully"
-        });
-
+    res.status(200).json({
+      message: "Farm deleted successfully"
     });
 
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+
+exports.getFarmMonitoring = async (req, res) => {
+  try {
+
+    const records =
+      await farmModel.getFarmMonitoring(
+        req.params.id
+      );
+
+    res.status(200).json(records);
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+
+exports.getFarmEvaluations = async (req, res) => {
+  try {
+
+    const evaluations =
+      await farmModel.getFarmEvaluations(
+        req.params.id
+      );
+
+    res.status(200).json(evaluations);
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
 };

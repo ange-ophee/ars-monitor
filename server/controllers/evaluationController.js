@@ -1,156 +1,190 @@
-const Evaluation = require("../models/evaluationModel");
+const evaluationModel = require("../models/evaluationModel");
+const db = require("../config/db");
 
-// CREATE EVALUATION
-exports.createEvaluation = (req, res) => {
+exports.createEvaluation =
+async (req, res) => {
 
-    const {
-        farm_id,
-        evaluator_id,
-        evaluation_date,
-        compliance_score,
-        evaluation_status,
-        recommendations,
-        corrective_actions
-    } = req.body;
+  try {
 
-    Evaluation.create(
-        [
-            farm_id,
-            evaluator_id,
-            evaluation_date,
-            compliance_score,
-            evaluation_status,
-            recommendations,
-            corrective_actions
-        ],
-        (err, result) => {
+    let status;
 
-            if (err) {
-                return res.status(500).json(err);
-            }
+    const score =
+      Number(req.body.compliance_score);
 
-            res.status(201).json({
-                message: "Evaluation created successfully",
-                evaluationId: result.insertId
-            });
+    if (score >= 90)
+      status = "Certified";
 
-        }
+    else if (score >= 75)
+      status = "Compliant";
+
+    else if (score >= 50)
+      status =
+      "Needs Improvement";
+
+    else
+      status =
+      "Non-Compliant";
+
+    const result =
+      await evaluationModel
+      .createEvaluation({
+        ...req.body,
+        evaluator_id:
+          req.user.id,
+        evaluation_status:
+          status
+      });
+
+    res.status(201).json({
+      message:
+        "Evaluation created",
+      evaluationId:
+        result.insertId,
+      evaluationStatus:
+        status
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+
+exports.getEvaluations = async (
+  req,
+  res
+) => {
+
+  try {
+
+    const evaluations =
+      await evaluationModel
+      .getAllEvaluations();
+
+    res.status(200).json(
+      evaluations
     );
 
-};
+  } catch (error) {
 
-
-// GET ALL
-exports.getAllEvaluations = (req, res) => {
-
-    Evaluation.getAll((err, results) => {
-
-        if (err) {
-            return res.status(500).json(err);
-        }
-
-        res.status(200).json(results);
-
+    res.status(500).json({
+      message: error.message
     });
 
-};
-
-
-// GET BY FARM
-exports.getByFarm = (req, res) => {
-
-    const farmId = req.params.farmId;
-
-    Evaluation.getByFarmId(farmId, (err, results) => {
-
-        if (err) {
-            return res.status(500).json(err);
-        }
-
-        res.status(200).json(results);
-
-    });
+  }
 
 };
 
+exports.getEvaluationById =
+async (req, res) => {
 
-// GET BY ID
-exports.getById = (req, res) => {
+  try {
 
-    const id = req.params.id;
+    const evaluation =
+      await evaluationModel
+      .getEvaluationById(
+        req.params.id
+      );
 
-    Evaluation.getById(id, (err, result) => {
+    if (!evaluation) {
 
-        if (err) {
-            return res.status(500).json(err);
-        }
+      return res.status(404).json({
+        message:
+          "Evaluation not found"
+      });
 
-        if (!result.length) {
-            return res.status(404).json({
-                message: "Evaluation not found"
-            });
-        }
+    }
 
-        res.status(200).json(result[0]);
-
-    });
-
-};
-
-
-// UPDATE
-exports.updateEvaluation = (req, res) => {
-
-    const id = req.params.id;
-
-    const {
-        evaluation_date,
-        compliance_score,
-        evaluation_status,
-        recommendations,
-        corrective_actions
-    } = req.body;
-
-    Evaluation.update(
-        id,
-        [
-            evaluation_date,
-            compliance_score,
-            evaluation_status,
-            recommendations,
-            corrective_actions
-        ],
-        (err) => {
-
-            if (err) {
-                return res.status(500).json(err);
-            }
-
-            res.status(200).json({
-                message: "Evaluation updated successfully"
-            });
-
-        }
+    res.status(200).json(
+      evaluation
     );
 
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+
 };
 
+exports.updateEvaluation =
+async (req, res) => {
 
-// DELETE
-exports.deleteEvaluation = (req, res) => {
+  try {
 
-    const id = req.params.id;
+    let status;
 
-    Evaluation.delete(id, (err) => {
+    const score =
+      Number(
+        req.body.compliance_score
+      );
 
-        if (err) {
-            return res.status(500).json(err);
+    if (score >= 90)
+      status = "Certified";
+
+    else if (score >= 75)
+      status = "Compliant";
+
+    else if (score >= 50)
+      status =
+      "Needs Improvement";
+
+    else
+      status =
+      "Non-Compliant";
+
+    await evaluationModel
+      .updateEvaluation(
+        req.params.id,
+        {
+          ...req.body,
+          evaluation_status:
+            status
         }
+      );
 
-        res.status(200).json({
-            message: "Evaluation deleted successfully"
-        });
-
+    res.status(200).json({
+      message:
+        "Evaluation updated",
+      status
     });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+
+};
+
+exports.deleteEvaluation =
+async (req, res) => {
+
+  try {
+
+    await evaluationModel
+      .deleteEvaluation(
+        req.params.id
+      );
+
+    res.status(200).json({
+      message:
+        "Evaluation deleted"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
 
 };

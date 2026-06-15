@@ -1,53 +1,144 @@
-const db = require('../config/db');
+const db = require("../config/db");
 
-const Evaluation = {
+const getAllEvaluations = async () => {
 
-    create: (data, callback) => {
-        const sql = `
-            INSERT INTO evaluations
-            (farm_id, evaluator_id, evaluation_date, compliance_score, evaluation_status, recommendations, corrective_actions)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        `;
-        db.query(sql, data, callback);
-    },
+  const [evaluations] = await db.query(`
+    SELECT
+      e.*,
+      f.farm_name,
+      u.full_name AS evaluator_name
+    FROM evaluations e
 
-    getAll: (callback) => {
-        const sql = `
-            SELECT * FROM evaluations
-        `;
-        db.query(sql, callback);
-    },
+    JOIN farms f
+      ON e.farm_id = f.id
 
-    getByFarmId: (farmId, callback) => {
-        const sql = `
-            SELECT * FROM evaluations WHERE farm_id = ?
-        `;
-        db.query(sql, [farmId], callback);
-    },
+    JOIN users u
+      ON e.evaluator_id = u.id
 
-    getById: (id, callback) => {
-        const sql = `
-            SELECT * FROM evaluations WHERE id = ?
-        `;
-        db.query(sql, [id], callback);
-    },
+    ORDER BY evaluation_date DESC
+  `);
 
-    update: (id, data, callback) => {
-        const sql = `
-            UPDATE evaluations 
-            SET evaluation_date=?, compliance_score=?, evaluation_status=?, recommendations=?, corrective_actions=?
-            WHERE id=?
-        `;
-        db.query(sql, [...data, id], callback);
-    },
-
-    delete: (id, callback) => {
-        const sql = `
-            DELETE FROM evaluations WHERE id=?
-        `;
-        db.query(sql, [id], callback);
-    }
-
+  return evaluations;
 };
 
-module.exports = Evaluation;
+const getEvaluationById =
+async (id) => {
+
+  const [rows] = await db.query(
+    `
+    SELECT *
+    FROM evaluations
+    WHERE id = ?
+    `,
+    [id]
+  );
+
+  return rows[0];
+};
+
+const createEvaluation =
+async (data) => {
+
+  const {
+    farm_id,
+    evaluator_id,
+    evaluation_date,
+    compliance_score,
+    evaluation_status,
+    recommendations,
+    corrective_actions,
+    score_breakdown,
+    status_reason
+  } = data;
+
+  const [result] = await db.query(
+    `
+    INSERT INTO evaluations
+    (
+      farm_id,
+      evaluator_id,
+      evaluation_date,
+      compliance_score,
+      evaluation_status,
+      recommendations,
+      corrective_actions,
+      score_breakdown,
+      status_reason
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    [
+      farm_id,
+      evaluator_id,
+      evaluation_date,
+      compliance_score,
+      evaluation_status,
+      recommendations,
+      corrective_actions,
+      score_breakdown,
+      status_reason
+    ]
+  );
+
+  return result;
+};
+
+const updateEvaluation =
+async (id, data) => {
+
+  const {
+    compliance_score,
+    evaluation_status,
+    recommendations,
+    corrective_actions,
+    score_breakdown,
+    status_reason
+  } = data;
+
+  const [result] = await db.query(
+    `
+    UPDATE evaluations
+    SET
+      compliance_score = ?,
+      evaluation_status = ?,
+      recommendations = ?,
+      corrective_actions = ?,
+      score_breakdown = ?,
+      status_reason = ?
+    WHERE id = ?
+    `,
+    [
+      compliance_score,
+      evaluation_status,
+      recommendations,
+      corrective_actions,
+      score_breakdown,
+      status_reason,
+      id
+    ]
+  );
+
+  return result;
+};
+
+const deleteEvaluation =
+async (id) => {
+
+  const [result] = await db.query(
+    `
+    DELETE FROM evaluations
+    WHERE id = ?
+    `,
+    [id]
+  );
+
+  return result;
+};
+
+module.exports = {
+  getAllEvaluations,
+  getEvaluationById,
+  createEvaluation,
+  updateEvaluation,
+  deleteEvaluation
+};

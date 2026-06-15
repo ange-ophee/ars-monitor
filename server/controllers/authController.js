@@ -1,83 +1,107 @@
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const bcrypt = require("bcryptjs");
+const generateToken = require("../utils/generateToken");
+const db = require("../config/db");
 
-const User = require('../models/userModel');
+exports.registerUser = async (req, res) => {
+  try {
+    const {
+      full_name,
+      email,
+      password,
+      phone,
+      role_id,
+    } = req.body;
 
-exports.register = async (req, res) => {
-    try {
-        const { full_name, email, password, phone, role_id } = req.body;
+    const [existing] = await db.query(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    );
 
-        User.findUserByEmail(email, async (err, results) => {
-            if (err) return res.status(500).json(err);
-
-            if (results.length > 0) {
-                return res.status(400).json({ message: 'User already exists' });
-            }
-
-            const hashedPassword = await bcrypt.hash(password, 10);
-
-            const userData = [
-                full_name,
-                email,
-                hashedPassword,
-                phone,
-                role_id
-            ];
-
-            User.createUser(userData, (err) => {
-                if (err) return res.status(500).json(err);
-
-                return res.status(201).json({
-                    message: 'User registered successfully'
-                });
-            });
-        });
-
-    } catch (error) {
-        return res.status(500).json(error);
+    if (existing.length > 0) {
+      return res.status(400).json({
+        message: "Email already exists",
+      });
     }
+
+    const hashedPassword =
+      await bcrypt.hash(password, 10);
+
+    await db.query(
+      `
+      INSERT INTO users
+      (full_name,email,password,phone,role_id)
+      VALUES (?,?,?,?,?)
+      `,
+      [
+        full_name,
+        email,
+        hashedPassword,
+        phone,
+        role_id,
+      ]
+    );
+
+    res.status(201).json({
+      message: "User registered successfully",
+    });
+
+  } catch (error) {
+    res.status(500).json(error);
+  }
 };
 
-exports.login = (req, res) => {
+exports.loginUser = async (req, res) => {
+  try {
+
     const { email, password } = req.body;
 
-    User.findUserByEmail(email, async (err, results) => {
-        if (err) return res.status(500).json(err);
+    const [users] = await db.query(
+      `
+      SELECT users.*, roles.role_name
+      FROM users
+      JOIN roles
+      ON users.role_id = roles.id
+      WHERE email = ?
+      `,
+      [email]
+    );
 
-        if (results.length === 0) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+    if (users.length === 0) {
+      return res.status(401).json({
+        message: "Invalid credentials"
+      });
+    }
 
-        const user = results[0];
+    const user = users[0];
 
-        const isMatch = await bcrypt.compare(password, user.password);
+    const isMatch =
+      await bcrypt.compare(
+        password,
+        user.password
+      );
 
-        if (!isMatch) {
-            return res.status(400).json({ message: 'Invalid credentials' });
-        }
+    if (!isMatch) {
+      return res.status(401).json({
+        message: "Invalid credentials"
+      });
+    }
 
-        const token = jwt.sign(
-            {
-                id: user.id,
-                role_id: user.role_id,
-                role_name: user.role_name
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: '1d' }
-        );
+    const token = generateToken(
+      user.id,
+      user.role_name
+    );
 
-        return res.status(200).json({
-            message: "Login successful",
-            token,
-            user: {
-                id: user.id,
-                full_name: user.full_name,
-                email: user.email,
-                phone: user.phone,
-                role_id: user.role_id,
-                role_name: user.role_name
-            }
-        });
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        full_name: user.full_name,
+        email: user.email,
+        role: user.role_name
+      }
     });
+
+  } catch (error) {
+    res.status(500).json(error);
+  }
 };

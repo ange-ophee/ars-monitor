@@ -1,37 +1,45 @@
-const jwt = require('jsonwebtoken');
-require('dotenv').config();
+const jwt = require("jsonwebtoken");
 
-exports.verifyToken = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
+const protect = (req, res, next) => {
 
-    if (!authHeader) {
-        return res.status(401).json({
-            message: 'Access denied. No token provided.'
-        });
-    }
+  let token;
 
-    const token = authHeader.split(' ')[1];
+  if (
+    req.headers.authorization &&
+    req.headers.authorization.startsWith("Bearer")
+  ) {
 
-    if (!token) {
-        return res.status(401).json({
-            message: 'Invalid token format.'
-        });
-    }
+    token =
+      req.headers.authorization.split(" ")[1];
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-        req.user = {
-            id: decoded.id,
-            role_id: decoded.role_id,
-            role_name: decoded.role_name
-        };
+      const decoded = jwt.verify(
+        token,
+        process.env.JWT_SECRET
+      );
 
-        next();
+      req.user = decoded;
+
+      next();
 
     } catch (error) {
-        return res.status(403).json({
-            message: 'Invalid or expired token.'
-        });
+
+      return res.status(401).json({
+        message: "Not authorized"
+      });
+
     }
+
+  }
+
+  if (!token) {
+
+    return res.status(401).json({
+      message: "No token provided"
+    });
+
+  }
 };
+
+module.exports = protect;

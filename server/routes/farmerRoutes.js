@@ -1,22 +1,64 @@
-const express = require('express');
-
+const express = require("express");
 const router = express.Router();
 
-const farmerController = require('../controllers/farmerController');
+const {
+  getFarmers,
+  getFarmerById,
+  createFarmer,
+  updateFarmer,
+  deleteFarmer,
+  getFarmerFarms
+} = require("../controllers/farmerController");
 
-// CREATE
-router.post('/', farmerController.createFarmer);
+const protect = require("../middleware/authMiddleware");
+const authorize = require("../middleware/roleMiddleware");
 
-// READ ALL
-router.get('/', farmerController.getAllFarmers);
+// View all farmers
+router.get(
+  "/",
+  protect,
+  authorize("Admin", "Cooperative Manager", "Auditor"),
+  getFarmers
+);
 
-// READ ONE
-router.get('/:id', farmerController.getFarmerById);
+// View one farmer
+router.get(
+  "/:id",
+  protect,
+  authorize("Admin", "Cooperative Manager", "Auditor", "Farmer"),
+  getFarmerById
+);
 
-// UPDATE
-router.put('/:id', farmerController.updateFarmer);
+// Create farmer
+router.post(
+  "/",
+  protect,
+  authorize("Admin", "Cooperative Manager"),
+  createFarmer
+);
 
-// DELETE
-router.delete('/:id', farmerController.deleteFarmer);
+// Update farmer
+router.put(
+  "/:id",
+  protect,
+  authorize("Admin", "Cooperative Manager"),
+  updateFarmer
+);
+
+// Delete farmer
+router.delete(
+  "/:id",
+  protect,
+  authorize("Admin"),
+  deleteFarmer
+);
+
+// Get farmer farms
+router.get(
+  "/:id/farms",
+  protect,
+  authorize("Admin", "Cooperative Manager", "Auditor", "Farmer"),
+  getFarmerFarms
+);
 
 module.exports = router;

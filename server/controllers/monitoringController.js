@@ -1,184 +1,227 @@
-const Monitoring = require("../models/monitoringModel");
+const monitoringModel = require("../models/monitoringModel");
+const assignmentModel = require("../models/assignmentModel");
 
-/**
- * CREATE MONITORING RECORD
- */
-exports.createMonitoring = (req, res) => {
+exports.getMonitoringRecords =
+async (req, res) => {
 
-    const {
+  try {
+
+    const records =
+      await monitoringModel
+      .getAllMonitoringRecords();
+
+    res.status(200).json(records);
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+
+exports.getMonitoringRecordById =
+async (req, res) => {
+
+  try {
+
+    const record =
+      await monitoringModel
+      .getMonitoringRecordById(
+        req.params.id
+      );
+
+    if (!record) {
+      return res.status(404).json({
+        message:
+          "Monitoring record not found"
+      });
+    }
+
+    res.status(200).json(record);
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+
+exports.createMonitoringRecord =
+async (req, res) => {
+
+  try {
+
+    const { farm_id } = req.body;
+
+    const assigned =
+      await assignmentModel
+      .isFarmAssignedToAuditor(
         farm_id,
-        auditor_id,
-        inspection_date,
-        observations,
-        disease_presence,
-        environmental_conditions,
-        production_status,
-        monitoring_status
-    } = req.body;
+        req.user.id
+      );
 
-    Monitoring.create(
-        [
-            farm_id,
-            auditor_id,
-            inspection_date,
-            observations,
-            disease_presence,
-            environmental_conditions,
-            production_status,
-            monitoring_status
-        ],
-        (err, result) => {
+    if (!assigned) {
+      return res.status(403).json({
+        message:
+          "You are not assigned to this farm"
+      });
+    }
 
-            if (err) {
-                return res.status(500).json(err);
-            }
+    const result =
+      await monitoringModel
+      .createMonitoringRecord({
+        ...req.body,
+        auditor_id: req.user.id
+      });
 
-            res.status(201).json({
-                message: "Monitoring record created successfully",
-                monitoringId: result.insertId
-            });
+      if (
+        req.body.monitoring_status ===
+        "Completed"
+        ) {
+
+        await assignmentModel
+            .updateAssignmentStatus(
+            req.body.farm_id,
+            req.user.id,
+            "completed"
+            );
 
         }
-    );
+        else {
 
-};
+        await assignmentModel
+            .updateAssignmentStatus(
+            req.body.farm_id,
+            req.user.id,
+            "active"
+            );
 
-
-/**
- * GET ALL MONITORING RECORDS
- */
-exports.getAllMonitoring = (req, res) => {
-
-    Monitoring.getAll((err, results) => {
-
-        if (err) {
-            return res.status(500).json(err);
         }
 
-        res.status(200).json(results);
-
+    res.status(201).json({
+      message:
+        "Monitoring record created",
+      monitoringId:
+        result.insertId
     });
 
-};
+  } catch (error) {
 
-
-/**
- * GET MONITORING RECORDS BY FARM
- */
-exports.getByFarm = (req, res) => {
-
-    const farmId = req.params.farmId;
-
-    Monitoring.getByFarmId(farmId, (err, results) => {
-
-        if (err) {
-            return res.status(500).json(err);
-        }
-
-        res.status(200).json(results);
-
+    res.status(500).json({
+      message: error.message
     });
 
+  }
 };
 
+exports.updateMonitoringRecord =
+async (req, res) => {
 
-/**
- * GET MONITORING RECORD BY ID
- */
-exports.getById = (req, res) => {
+  try {
 
-    const id = req.params.id;
+    const existingRecord =
+      await monitoringModel
+      .getMonitoringRecordById(
+        req.params.id
+      );
 
-    Monitoring.getById(id, (err, result) => {
+    if (!existingRecord) {
+      return res.status(404).json({
+        message:
+          "Monitoring record not found"
+      });
+    }
 
-        if (err) {
-            return res.status(500).json(err);
-        }
+    await monitoringModel
+      .updateMonitoringRecord(
+        req.params.id,
+        req.body
+      );
 
-        if (!result.length) {
-            return res.status(404).json({
-                message: "Monitoring record not found"
-            });
-        }
+    const status =
+      req.body.monitoring_status ||
+      existingRecord.monitoring_status;
 
-        res.status(200).json(result[0]);
+    if (status === "Completed") {
 
+      await assignmentModel
+        .updateAssignmentStatus(
+          existingRecord.farm_id,
+          existingRecord.auditor_id,
+          "completed"
+        );
+
+    } else {
+
+      await assignmentModel
+        .updateAssignmentStatus(
+          existingRecord.farm_id,
+          existingRecord.auditor_id,
+          "active"
+        );
+
+    }
+
+    res.status(200).json({
+      message:
+        "Monitoring record updated successfully"
     });
 
-};
+  } catch (error) {
 
-
-/**
- * UPDATE MONITORING RECORD
- */
-exports.updateMonitoring = (req, res) => {
-
-    const id = req.params.id;
-
-    const {
-        inspection_date,
-        observations,
-        disease_presence,
-        environmental_conditions,
-        production_status,
-        monitoring_status
-    } = req.body;
-
-    Monitoring.update(
-        id,
-        [
-            inspection_date,
-            observations,
-            disease_presence,
-            environmental_conditions,
-            production_status,
-            monitoring_status
-        ],
-        (err, result) => {
-
-            if (err) {
-                return res.status(500).json(err);
-            }
-
-            if (result.affectedRows === 0) {
-                return res.status(404).json({
-                    message: "Monitoring record not found"
-                });
-            }
-
-            res.status(200).json({
-                message: "Monitoring record updated successfully"
-            });
-
-        }
-    );
-
-};
-
-
-/**
- * DELETE MONITORING RECORD
- */
-exports.deleteMonitoring = (req, res) => {
-
-    const id = req.params.id;
-
-    Monitoring.delete(id, (err, result) => {
-
-        if (err) {
-            return res.status(500).json(err);
-        }
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({
-                message: "Monitoring record not found"
-            });
-        }
-
-        res.status(200).json({
-            message: "Monitoring record deleted successfully"
-        });
-
+    res.status(500).json({
+      message: error.message
     });
 
+  }
+};
+
+exports.deleteMonitoringRecord =
+async (req, res) => {
+
+  try {
+
+    await monitoringModel
+      .deleteMonitoringRecord(
+        req.params.id
+      );
+
+    res.status(200).json({
+      message:
+        "Monitoring record deleted"
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+
+exports.getMyMonitoringRecords =
+async (req, res) => {
+
+  try {
+
+    const records =
+      await monitoringModel
+      .getRecordsByAuditor(
+        req.user.id
+      );
+
+    res.status(200).json(records);
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
 };

@@ -1,22 +1,77 @@
-const express = require('express');
+const express = require("express");
 
 const router = express.Router();
 
-const farmController = require('../controllers/farmController');
+const protect =
+require("../middleware/authMiddleware");
 
-// CREATE
-router.post('/', farmController.createFarm);
+const authorize =
+require("../middleware/roleMiddleware");
 
-// READ ALL
-router.get('/', farmController.getAllFarms);
+const {
+  getFarms,
+  getFarmById,
+  createFarm,
+  updateFarm,
+  deleteFarm,
+  getFarmMonitoring,
+  getFarmEvaluations
+} = require("../controllers/farmController");
 
-// READ ONE
-router.get('/:id', farmController.getFarmById);
+router.get(
+  "/",
+  protect,
+  authorize(
+    "Admin",
+    "Auditor",
+    "Cooperative Manager"
+  ),
+  getFarms
+);
 
-// UPDATE
-router.put('/:id', farmController.updateFarm);
+router.get(
+  "/:id",
+  protect,
+  getFarmById
+);
 
-// DELETE
-router.delete('/:id', farmController.deleteFarm);
+router.post(
+  "/",
+  protect,
+  authorize(
+    "Admin",
+    "Cooperative Manager"
+  ),
+  createFarm
+);
+
+router.put(
+  "/:id",
+  protect,
+  authorize(
+    "Admin",
+    "Cooperative Manager"
+  ),
+  updateFarm
+);
+
+router.delete(
+  "/:id",
+  protect,
+  authorize("Admin"),
+  deleteFarm
+);
+
+router.get(
+  "/:id/monitoring",
+  protect,
+  getFarmMonitoring
+);
+
+router.get(
+  "/:id/evaluations",
+  protect,
+  getFarmEvaluations
+);
 
 module.exports = router;

@@ -1,5 +1,4 @@
 const express = require("express");
-
 const router = express.Router();
 
 const protect =
@@ -9,14 +8,14 @@ const authorize =
 require("../middleware/roleMiddleware");
 
 const {
-  getMonitoringRecords,
-  getMonitoringRecordById,
-  createMonitoringRecord,
-  updateMonitoringRecord,
-  deleteMonitoringRecord,
-  getMyMonitoringRecords
+  getAssignments,
+  getAssignmentById,
+  createAssignment,
+  updateAssignment,
+  deleteAssignment,
+  getMyAssignments
 } = require(
-  "../controllers/monitoringController"
+  "../controllers/assignmentController"
 );
 
 router.get(
@@ -24,44 +23,49 @@ router.get(
   protect,
   authorize(
     "Admin",
-    "Auditor",
     "Cooperative Manager"
   ),
-  getMonitoringRecords
+  getAssignments
 );
 
 router.get(
   "/my",
   protect,
   authorize("Auditor"),
-  getMyMonitoringRecords
+  getMyAssignments
 );
 
 router.get(
   "/:id",
   protect,
-  getMonitoringRecordById
+  getAssignmentById
 );
 
 router.post(
   "/",
   protect,
-  authorize("Auditor"),
-  createMonitoringRecord
+  authorize(
+    "Admin",
+    "Cooperative Manager"
+  ),
+  createAssignment
 );
 
 router.put(
   "/:id",
   protect,
-  authorize("Auditor"),
-  updateMonitoringRecord
+  authorize(
+    "Admin",
+    "Cooperative Manager"
+  ),
+  updateAssignment
 );
 
 router.delete(
   "/:id",
   protect,
   authorize("Admin"),
-  deleteMonitoringRecord
+  deleteAssignment
 );
 
 module.exports = router;

@@ -1,46 +1,94 @@
 const express = require("express");
 const router = express.Router();
 
-/**
- * REPORT CONTROLLER
- * Handles all report-related route logic
- */
-const reportController = require("../controllers/reportController");
+const protect = require("../middleware/authMiddleware");
+const authorize = require("../middleware/roleMiddleware");
 
+const {
+  getReports,
+  generateFarmReport,
+  saveReport,
+  generateComplianceReport,
+  generateFarmPerformanceReport,
+  generateTraceabilityReport,
+  generateCertificationReport,
+  getARSComplianceDashboard
+} = require("../controllers/reportController");
 
-/**
- * CREATE A NEW REPORT
- * POST /api/reports
- */
-router.post("/", reportController.createReport);
+/* =========================
+   BASIC REPORTS
+========================= */
 
+// Get all saved reports
+router.get(
+  "/",
+  protect,
+  authorize("Admin", "Auditor", "Cooperative Manager"),
+  getReports
+);
 
-/**
- * GET ALL REPORTS
- * GET /api/reports
- */
-router.get("/", reportController.getAllReports);
+// Save a report
+router.post(
+  "/",
+  protect,
+  authorize("Admin", "Auditor", "Cooperative Manager"),
+  saveReport
+);
 
+// Generate single farm report
+router.get(
+  "/farm/:farmId",
+  protect,
+  authorize("Admin", "Auditor", "Cooperative Manager"),
+  generateFarmReport
+);
 
-/**
- * GET SINGLE REPORT BY ID
- * GET /api/reports/:id
- */
-router.get("/:id", reportController.getReportById);
+/* =========================
+   ANALYTICS REPORTS
+========================= */
 
+// Compliance summary (ARS scores overview)
+router.get(
+  "/compliance-summary",
+  protect,
+  authorize("Admin", "Auditor"),
+  generateComplianceReport
+);
 
-/**
- * UPDATE REPORT
- * PUT /api/reports/:id
- */
-router.put("/:id", reportController.updateReport);
+// Farm performance ranking
+router.get(
+  "/farm-performance",
+  protect,
+  authorize("Admin", "Auditor", "Cooperative Manager"),
+  generateFarmPerformanceReport
+);
 
+// Traceability analytics
+router.get(
+  "/traceability-summary",
+  protect,
+  authorize("Admin", "Auditor"),
+  generateTraceabilityReport
+);
 
-/**
- * DELETE REPORT
- * DELETE /api/reports/:id
- */
-router.delete("/:id", reportController.deleteReport);
+// Certification analytics
+router.get(
+  "/certification-summary",
+  protect,
+  authorize("Admin", "Auditor"),
+  generateCertificationReport
+);
 
+/* =========================
+   ARS DASHBOARD (ADVANCED)
+========================= */
+
+// Full ARS compliance dashboard per farm
+router.get(
+  "/ars-dashboard/:farmId",
+  protect,
+  authorize("Admin", "Auditor", "Cooperative Manager"),
+  getARSComplianceDashboard
+);
 
 module.exports = router;

@@ -1,111 +1,125 @@
-const Farmer = require('../models/farmerModel');
+const farmerModel = require("../models/farmerModel");
 
-// CREATE FARMER
-exports.createFarmer = (req, res) => {
+exports.getFarmers = async (req, res) => {
+  try {
 
-    const {
-        user_id,
-        gender,
-        cooperative_name,
-        region,
-        village
-    } = req.body;
+    const farmers =
+      await farmerModel.getAllFarmers();
 
-    Farmer.create(
-        [user_id, gender, cooperative_name, region, village],
-        (err, result) => {
+    res.status(200).json(farmers);
 
-            if (err) {
-                return res.status(500).json(err);
-            }
+  } catch (error) {
 
-            res.status(201).json({
-                message: "Farmer created successfully",
-                farmerId: result.insertId
-            });
+    res.status(500).json({
+      message: error.message
+    });
 
-        }
+  }
+};
+
+exports.getFarmerById = async (req, res) => {
+  try {
+
+    const farmer =
+      await farmerModel.getFarmerById(
+        req.params.id
+      );
+
+    if (!farmer) {
+      return res.status(404).json({
+        message: "Farmer not found"
+      });
+    }
+
+    res.status(200).json(farmer);
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+
+exports.createFarmer = async (req, res) => {
+  try {
+
+    const result =
+      await farmerModel.createFarmer(
+        req.body
+      );
+
+    res.status(201).json({
+      message: "Farmer created successfully",
+      farmerId: result.insertId
+    });
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+
+exports.updateFarmer = async (req, res) => {
+  try {
+
+    await farmerModel.updateFarmer(
+      req.params.id,
+      req.body
     );
 
-};
-
-// GET ALL FARMERS
-exports.getAllFarmers = (req, res) => {
-
-    Farmer.getAll((err, results) => {
-
-        if (err) {
-            return res.status(500).json(err);
-        }
-
-        res.status(200).json(results);
-
+    res.status(200).json({
+      message: "Farmer updated successfully"
     });
 
-};
+  } catch (error) {
 
-// GET ONE FARMER
-exports.getFarmerById = (req, res) => {
-
-    const id = req.params.id;
-
-    Farmer.getById(id, (err, result) => {
-
-        if (err) {
-            return res.status(500).json(err);
-        }
-
-        res.status(200).json(result[0]);
-
+    res.status(500).json({
+      message: error.message
     });
 
+  }
 };
 
-// UPDATE FARMER
-exports.updateFarmer = (req, res) => {
+exports.deleteFarmer = async (req, res) => {
+  try {
 
-    const id = req.params.id;
-
-    const {
-        gender,
-        cooperative_name,
-        region,
-        village
-    } = req.body;
-
-    Farmer.update(
-        id,
-        [gender, cooperative_name, region, village],
-        (err) => {
-
-            if (err) {
-                return res.status(500).json(err);
-            }
-
-            res.json({
-                message: "Farmer updated successfully"
-            });
-
-        }
+    await farmerModel.deleteFarmer(
+      req.params.id
     );
 
-};
-
-// DELETE FARMER
-exports.deleteFarmer = (req, res) => {
-
-    const id = req.params.id;
-
-    Farmer.delete(id, (err) => {
-
-        if (err) {
-            return res.status(500).json(err);
-        }
-
-        res.json({
-            message: "Farmer deleted successfully"
-        });
-
+    res.status(200).json({
+      message: "Farmer deleted successfully"
     });
 
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
+};
+
+exports.getFarmerFarms = async (req, res) => {
+  try {
+
+    const farms =
+      await farmerModel.getFarmerFarms(
+        req.params.id
+      );
+
+    res.status(200).json(farms);
+
+  } catch (error) {
+
+    res.status(500).json({
+      message: error.message
+    });
+
+  }
 };
