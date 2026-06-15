@@ -4,13 +4,20 @@ const db = require("../config/db");
 
 exports.registerUser = async (req, res) => {
   try {
+
     const {
       full_name,
       email,
       password,
       phone,
-      role_id,
+      role_id
     } = req.body;
+
+    if (!full_name || !email || !password || !role_id) {
+      return res.status(400).json({
+        message: "Missing required fields"
+      });
+    }
 
     const [existing] = await db.query(
       "SELECT * FROM users WHERE email = ?",
@@ -19,34 +26,33 @@ exports.registerUser = async (req, res) => {
 
     if (existing.length > 0) {
       return res.status(400).json({
-        message: "Email already exists",
+        message: "Email already exists"
       });
     }
 
-    const hashedPassword =
-      await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     await db.query(
-      `
-      INSERT INTO users
-      (full_name,email,password,phone,role_id)
-      VALUES (?,?,?,?,?)
-      `,
+      `INSERT INTO users (full_name,email,password,phone,role_id)
+       VALUES (?,?,?,?,?)`,
       [
         full_name,
         email,
         hashedPassword,
-        phone,
-        role_id,
+        phone || null,
+        Number(role_id)
       ]
     );
 
     res.status(201).json({
-      message: "User registered successfully",
+      message: "User registered successfully"
     });
 
   } catch (error) {
-    res.status(500).json(error);
+    console.log("REGISTER ERROR:", error); // IMPORTANT
+    res.status(500).json({
+      message: error.message
+    });
   }
 };
 
@@ -102,6 +108,9 @@ exports.loginUser = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json(error);
+    console.log("LOGIN ERROR:", error); // IMPORTANT
+    res.status(500).json({
+      message: error.message
+    });
   }
 };

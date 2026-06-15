@@ -1,110 +1,33 @@
-import { Link, useLocation } from "react-router-dom";
+import theme from "../assets/theme";
 
-function Navbar() {
-
-  const location = useLocation();
+function Navbar({ title }) {
 
   return (
+    <div style={styles.navbar}>
 
-    <nav style={styles.navbar}>
+      <h2>{title}</h2>
 
-      {/* LOGO */}
-      <Link to="/" style={styles.logo}>
-        ARS Monitor
-      </Link>
-
-      {/* NAVIGATION LINKS */}
-      <div style={styles.links}>
-
-        <Link
-          to="/"
-          style={{
-            ...styles.link,
-            color: location.pathname === "/" ? "#C9A227" : "#FFFFFF"
-          }}
-        >
-          Home
-        </Link>
-
-        <Link
-          to="/about"
-          style={{
-            ...styles.link,
-            color: location.pathname === "/about" ? "#C9A227" : "#FFFFFF"
-          }}
-        >
-          About
-        </Link>
-
-        <Link
-          to="/contact"
-          style={{
-            ...styles.link,
-            color: location.pathname === "/contact" ? "#C9A227" : "#FFFFFF"
-          }}
-        >
-          Contact
-        </Link>
-
+      <div style={styles.profile}>
+        👤 User
       </div>
 
-      {/* AUTH BUTTON */}
-      <Link to="/login" style={styles.button}>
-        Login
-      </Link>
-
-    </nav>
-
+    </div>
   );
-
 }
 
 const styles = {
 
   navbar: {
-    position: "fixed",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: "80px",
-    padding: "0 7%",
-    background: "rgba(14, 14, 14, 0.72)",
-    backdropFilter: "blur(14px)",
+    background: "#fff",
+    padding: "20px 30px",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    zIndex: 1000,
-    borderBottom: "1px solid rgba(255,255,255,0.08)",
-    boxSizing: "border-box"
+    boxShadow: theme.shadow.card
   },
 
-  logo: {
-    textDecoration: "none",
-    color: "#C9A227",
-    fontSize: "26px",
-    fontWeight: "700"
-  },
-
-  links: {
-    display: "flex",
-    gap: "35px"
-  },
-
-  link: {
-    textDecoration: "none",
-    fontWeight: "500",
-    transition: "0.3s ease",
-    fontSize: "15px"
-  },
-
-  button: {
-    textDecoration: "none",
-    background: "#1B5E20",
-    color: "white",
-    padding: "10px 22px",
-    borderRadius: "12px",
-    fontWeight: "600",
-    transition: "0.3s ease"
+  profile: {
+    fontWeight: "600"
   }
 
 };

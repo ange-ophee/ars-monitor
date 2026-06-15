@@ -1,83 +1,38 @@
-import { NavLink } from "react-router-dom";
+import { Link } from "react-router-dom";
+import theme from "../assets/theme";
 
-function Sidebar() {
-
-  const links = [
-    { path: "/dashboard", label: "Dashboard" },
-    { path: "/farmers", label: "Farmers" },
-    { path: "/farms", label: "Farms" },
-    { path: "/monitoring", label: "Monitoring" },
-    { path: "/evaluations", label: "Evaluations" },
-    { path: "/reports", label: "Reports" }
-  ];
-  const user = JSON.parse(
-        localStorage.getItem("user")
-    );
+function Sidebar({ links }) {
 
   return (
-
     <div style={styles.sidebar}>
 
-      {/* LOGO */}
-      <div>
-
+      <div style={styles.logoSection}>
         <h2 style={styles.logo}>
-          ARS Monitor
+          ARS 1000 Monitor
         </h2>
 
         <p style={styles.subtitle}>
-          Sustainability Platform
+          Sustainable Cocoa
         </p>
-
       </div>
 
-      {/* NAVIGATION */}
-      <div style={styles.nav}>
+      <div style={styles.menu}>
 
         {links.map((link) => (
 
-          <NavLink
+          <Link
             key={link.path}
             to={link.path}
-            style={({ isActive }) => ({
-              ...styles.link,
-              background: isActive ? "#5D4037" : "transparent",
-              color: isActive ? "#FFFFFF" : "#D6D6D6",
-              borderLeft: isActive
-                ? "4px solid #C9A227"
-                : "4px solid transparent"
-            })}
+            style={styles.link}
           >
-            {link.label}
-          </NavLink>
+            {link.icon} {link.label}
+          </Link>
 
         ))}
 
       </div>
 
-       <div style={styles.profile}>
-        <div style={styles.avatar}>
-          {user?.full_name?.charAt(0) || "U"}
-        </div>
-
-        <div>
-          <h3 style={{ margin: 0 }}>
-            Welcome, {user?.full_name}
-          </h3>
-
-          <p style={{ margin: 0, fontSize: "13px", color: "#ccc" }}>
-            Role: {user?.role_name}
-          </p>
-        </div>
-      </div>
-
-      {/* FOOTER */}
-      <div style={styles.footer}>
-        ARS 1000 Compliance System
-      </div>
-
     </div>
-
   );
 }
 
@@ -86,68 +41,42 @@ const styles = {
   sidebar: {
     width: "260px",
     height: "100vh",
-    background: "#3f5238",
+    background: theme.colors.primary,
     color: "white",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "space-between",
-    padding: "30px 20px",
-    position: "sticky",
+    padding: "25px",
+    boxSizing: "border-box",
+    position: "fixed",
+    left: 0,
     top: 0
   },
 
+  logoSection: {
+    marginBottom: "40px"
+  },
+
   logo: {
-    color: "#C9A227",
-    marginBottom: "5px",
-    fontSize: "28px"
+    color: theme.colors.gold,
+    marginBottom: "5px"
   },
 
   subtitle: {
-    color: "#B0B0B0",
+    color: "#ddd",
     fontSize: "14px"
   },
 
-  nav: {
+  menu: {
     display: "flex",
     flexDirection: "column",
-    gap: "10px",
-    marginTop: "40px"
+    gap: "12px"
   },
 
   link: {
-    padding: "14px 18px",
-    borderRadius: "12px",
+    color: "white",
     textDecoration: "none",
-    transition: "0.3s ease",
-    fontWeight: "500"
-  },
-
-  footer: {
-    color: "#888",
-    fontSize: "13px"
-  },
-
-  profile: {
-  display: "flex",
-  alignItems: "center",
-  gap: "12px",
-  padding: "15px",
-  borderTop: "1px solid rgba(255,255,255,0.1)",
-  borderBottom: "1px solid rgba(255,255,255,0.1)"
-},
-
-avatar: {
-  width: "45px",
-  height: "45px",
-  borderRadius: "50%",
-  background: "#C9A227",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  fontWeight: "bold",
-  color: "#000",
-  fontSize: "18px"
-}
+    padding: "12px",
+    borderRadius: "10px",
+    transition: "0.3s"
+  }
 
 };
 

@@ -25,6 +25,7 @@ function Auth() {
   };
 
   const handleSubmit = async (e) => {
+
     e.preventDefault();
 
     try {
@@ -32,30 +33,101 @@ function Auth() {
       // ======================
       // LOGIN
       // ======================
-      const response = await API.post(
-        "/auth/login",
-        {
-          email: form.email,
-          password: form.password
+      if (isLogin) {
+
+        const response = await API.post(
+          "/auth/login",
+          {
+            email: form.email,
+            password: form.password
+          }
+        );
+
+        const user =
+          response.data.user;
+
+        localStorage.setItem(
+          "token",
+          response.data.token
+        );
+
+        localStorage.setItem(
+          "user",
+          JSON.stringify(user)
+        );
+
+        if (
+          user.role === "Admin"
+        ) {
+
+          navigate("/admin");
+
         }
-      );
+        else if (
+          user.role === "Auditor"
+        ) {
 
-      // SAFE STORAGE
-      localStorage.setItem("token", response.data.token);
+          navigate("/auditor");
 
-      // IMPORTANT: ensure user exists
-      localStorage.setItem(
-        "user",
-        JSON.stringify(response.data.user || {})
-      );
+        }
+        else if (
+          user.role ===
+          "Cooperative Manager"
+        ) {
 
-      navigate("/dashboard");
+          navigate("/cooperative");
+
+        }
+        else {
+
+          navigate("/farmer");
+
+        }
+
+      }
+
+      // ======================
+      // REGISTER
+      // ======================
+      else {
+
+        await API.post(
+          "/auth/register",
+          {
+            full_name:
+              form.full_name,
+            email:
+              form.email,
+            phone:
+              form.phone,
+            password:
+              form.password,
+            role_id:
+              Number(form.role_id)
+          }
+        );
+
+        alert(
+          "Account created successfully"
+        );
+
+        setIsLogin(true);
+
+        setForm({
+          full_name: "",
+          email: "",
+          phone: "",
+          password: "",
+          role_id: ""
+        });
+
+      }
 
     } catch (error) {
 
       alert(
         error.response?.data?.message ||
-        "Login failed"
+        "Operation failed"
       );
 
     }
@@ -126,6 +198,7 @@ function Auth() {
 
               {/* EMAIL */}
               <input
+                type="email"
                 name="email"
                 placeholder="Adresse e-mail"
                 value={form.email}
@@ -136,6 +209,7 @@ function Auth() {
               {/* PHONE */}
               {!isLogin && (
                 <input
+                  type="tel"
                   name="phone"
                   placeholder="Téléphone"
                   value={form.phone}
@@ -152,8 +226,8 @@ function Auth() {
                   onChange={handleChange}
                   style={{
                     ...styles.input,
-                    color: "#191818",
-                    background: "rgba(255,255,255,0.08)"
+                    color: "#949393",
+                    background: "rgba(4, 4, 4, 0)"
                   }}
                 >
                   <option value="">Sélectionner un rôle</option>
@@ -167,6 +241,7 @@ function Auth() {
               {/* PASSWORD */}
               <div style={styles.passwordContainer}>
                 <input
+                  required
                   type={showPassword ? "text" : "password"}
                   name="password"
                   placeholder="Mot de passe"
@@ -302,15 +377,15 @@ const styles = {
   },
 
   card: {
-    width: "100%",
-    background: "rgba(20, 20, 20, 0.75)",
-    backdropFilter: "blur(18px)",
-    padding: "45px",
-    borderRadius: "24px",
-    border: "1px solid rgba(255,255,255,0.12)",
-    color: "white",
-    boxShadow: "0 10px 40px rgba(0,0,0,0.6)"
-  },
+  width: "100%",
+  background: "rgba(20, 20, 20, 0.75)",
+  backdropFilter: "blur(18px)",
+  padding: "45px",
+  borderRadius: "24px",
+  border: "1px solid rgba(255,255,255,0.12)",
+  color: "white",
+  boxShadow: "0 10px 40px rgba(0,0,0,0.6)"
+},
 
   title: {
     fontSize: "32px",
@@ -323,16 +398,16 @@ const styles = {
   },
 
   input: {
-    width: "100%",
-    padding: "14px",
-    marginBottom: "14px",
-    borderRadius: "12px",
-    border: "1px solid rgba(255,255,255,0.15)",
-    background: "rgba(0,0,0,0.35)",
-    color: "white",
-    boxSizing: "border-box",
-    outline: "none"
-  },
+  width: "100%",
+  padding: "14px",
+  marginBottom: "14px",
+  borderRadius: "12px",
+  border: "1px solid rgba(255,255,255,0.15)",
+  background: "rgba(0,0,0,0.35)",
+  color: "white",
+  boxSizing: "border-box",
+  outline: "none"
+},
 
   passwordContainer: {
     display: "flex",
