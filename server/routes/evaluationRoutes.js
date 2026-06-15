@@ -1,5 +1,4 @@
 const express = require('express');
-
 const router = express.Router();
 
 const evaluationController = require('../controllers/evaluationController');
@@ -8,13 +7,10 @@ const evaluationController = require('../controllers/evaluationController');
 router.post('/', evaluationController.createEvaluation);
 
 // GET ALL
-router.get('/', evaluationController.getAllEvaluations);
-
-// GET BY FARM
-router.get('/farm/:farmId', evaluationController.getByFarm);
+router.get('/', evaluationController.getEvaluations);
 
 // GET BY ID
-router.get('/:id', evaluationController.getById);
+router.get('/:id', evaluationController.getEvaluationById);
 
 // UPDATE
 router.put('/:id', evaluationController.updateEvaluation);

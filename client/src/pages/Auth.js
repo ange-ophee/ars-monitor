@@ -303,12 +303,13 @@ const styles = {
 
   card: {
     width: "100%",
-    background: "rgba(255,255,255,0.12)",
+    background: "rgba(20, 20, 20, 0.75)",
     backdropFilter: "blur(18px)",
     padding: "45px",
     borderRadius: "24px",
-    border: "1px solid rgba(255,255,255,0.15)",
-    color: "white"
+    border: "1px solid rgba(255,255,255,0.12)",
+    color: "white",
+    boxShadow: "0 10px 40px rgba(0,0,0,0.6)"
   },
 
   title: {
@@ -327,9 +328,10 @@ const styles = {
     marginBottom: "14px",
     borderRadius: "12px",
     border: "1px solid rgba(255,255,255,0.15)",
-    background: "rgba(255,255,255,0.08)",
+    background: "rgba(0,0,0,0.35)",
     color: "white",
-    boxSizing: "border-box"
+    boxSizing: "border-box",
+    outline: "none"
   },
 
   passwordContainer: {

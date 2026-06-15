@@ -76,7 +76,7 @@ const getAllTraceability = async () => {
 
   return rows;
 };
-Export
+
 module.exports = {
   getTraceabilityByBatch,
   createTraceEvent,
