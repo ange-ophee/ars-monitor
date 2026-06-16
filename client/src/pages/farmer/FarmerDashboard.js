@@ -1,101 +1,160 @@
+import { useState } from "react";
 import FarmerLayout from "../../layouts/FarmerLayout";
 
 function FarmerDashboard() {
 
+  const [loading, setLoading] = useState(false);
+
   const kpis = [
     { title: "My Farms", value: 3, hint: "Active registered farms" },
-    { title: "Harvests", value: 15, hint: "Recorded production cycles" },
+    { title: "Harvest Records", value: 15, hint: "Logged production cycles" },
     { title: "Compliance Score", value: "82%", hint: "ARS 1000 readiness level" },
-    { title: "Recommendations", value: 5, hint: "Actions to improve yield & compliance" }
+    { title: "Recommendations", value: 5, hint: "Pending improvement actions" }
   ];
 
-  const alerts = [
-    {
-      type: "warning",
-      message: "One of your farms requires updated pesticide records."
-    },
-    {
-      type: "info",
-      message: "Harvest season optimization plan is now available."
-    },
-    {
-      type: "success",
-      message: "Your compliance score improved by +6% this month."
+  const apiCall = async (url, options = {}) => {
+    const res = await fetch(`http://localhost:5000${url}`, {
+      headers: { "Content-Type": "application/json" },
+      ...options
+    });
+
+    if (!res.ok) throw new Error("Request failed");
+    return res.json();
+  };
+
+  const handleCreateFarm = async () => {
+    try {
+      setLoading(true);
+
+      await apiCall("/api/farms", {
+        method: "POST",
+        body: JSON.stringify({
+          name: "New Farm",
+          createdAt: new Date().toISOString()
+        })
+      });
+
+      console.log("Farm created");
+    } catch (err) {
+      console.error("Create farm failed", err);
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
+
+  const handleAddHarvest = async () => {
+    try {
+      setLoading(true);
+
+      await apiCall("/api/harvests", {
+        method: "POST",
+        body: JSON.stringify({
+          farmId: "FARM-101",
+          quantity: 0,
+          createdAt: new Date().toISOString()
+        })
+      });
+
+      console.log("Harvest added");
+    } catch (err) {
+      console.error("Harvest failed", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewCompliance = () => {
+    window.location.href = "/farmer/compliance";
+  };
+
+  const handleDownloadReport = async () => {
+    try {
+      setLoading(true);
+
+      const res = await fetch("http://localhost:5000/api/reports/farmer");
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "farmer-report.pdf";
+      a.click();
+
+      window.URL.revokeObjectURL(url);
+
+    } catch (err) {
+      console.error("Download failed", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <FarmerLayout>
 
       {/* HERO */}
       <div style={styles.hero}>
-        <h1 style={styles.title}>🌿 Farmer Dashboard</h1>
+        <h1 style={styles.title}>🌿 Farmer Command Center</h1>
 
         <p style={styles.subtitle}>
-          This is your personal control center for managing farms, tracking harvests,
-          improving compliance, and receiving tailored recommendations under ARS 1000 standards.
+          Manage your farms, track harvests, monitor compliance,
+          and receive actionable recommendations under ARS 1000 standards.
         </p>
 
-        <div style={styles.statusLine}>
-          🟢 Account Active • 🌱 Farms Verified • 📊 Compliance Tracking Enabled
-        </div>
+        {loading && (
+          <div style={styles.loadingBar}>
+            Processing request...
+          </div>
+        )}
       </div>
 
-      {/* KPI STRIP */}
+      {/* KPI */}
       <div style={styles.kpiGrid}>
         {kpis.map((k, i) => (
           <div key={i} style={styles.kpiCard}>
-            <h2 style={styles.kpiValue}>{k.value}</h2>
-            <p style={styles.kpiTitle}>{k.title}</p>
-            <span style={styles.kpiHint}>{k.hint}</span>
+            <h2>{k.value}</h2>
+            <p>{k.title}</p>
+            <span style={styles.hint}>{k.hint}</span>
           </div>
         ))}
       </div>
 
-      {/* MAIN CONTENT GRID */}
+      {/* ACTIONS + INSIGHTS */}
       <div style={styles.grid}>
 
-        {/* QUICK ACTIONS */}
+        {/* ACTIONS */}
         <div style={styles.card}>
           <h3>⚡ Quick Actions</h3>
 
-          <button style={styles.btn}>➕ Register New Farm</button>
-          <button style={styles.btn}>🌾 Add Harvest Record</button>
-          <button style={styles.btn}>📊 View Compliance Report</button>
-          <button style={styles.btnSecondary}>📥 Download Farm Report</button>
+          <button style={styles.btn} onClick={handleCreateFarm}>
+            ➕ Register Farm
+          </button>
+
+          <button style={styles.btn} onClick={handleAddHarvest}>
+            🌾 Add Harvest Record
+          </button>
+
+          <button style={styles.btn} onClick={handleViewCompliance}>
+            📊 View Compliance
+          </button>
+
+          <button style={styles.btnSecondary} onClick={handleDownloadReport}>
+            📥 Download Report
+          </button>
         </div>
 
-        {/* ALERT CENTER */}
+        {/* INSIGHTS */}
         <div style={styles.card}>
-          <h3>🔔 Alerts & Insights</h3>
-
-          {alerts.map((a, i) => (
-            <div key={i} style={{
-              ...styles.alert,
-              background:
-                a.type === "warning"
-                  ? "#FEF3C7"
-                  : a.type === "success"
-                  ? "#DCFCE7"
-                  : "#DBEAFE"
-            }}>
-              {a.message}
-            </div>
-          ))}
-        </div>
-
-        {/* PERFORMANCE INSIGHT */}
-        <div style={styles.card}>
-          <h3>📈 Farm Performance Insight</h3>
+          <h3>📊 System Insight</h3>
 
           <p style={styles.text}>
-            Your farms are performing above regional average.
-            Compliance is strong, but pesticide documentation
-            remains the main improvement area.
+            Your farms are currently performing above regional average.
+            Main improvement focus: pesticide documentation and traceability updates.
           </p>
 
           <div style={styles.progressWrap}>
-            <div style={styles.progressLabel}>Overall Compliance</div>
+            <div style={styles.progressLabel}>Compliance Level</div>
 
             <div style={styles.progressBar}>
               <div style={styles.progressFill} />
@@ -130,8 +189,8 @@ const styles = {
     lineHeight: "1.7"
   },
 
-  statusLine: {
-    marginTop: "12px",
+  loadingBar: {
+    marginTop: "10px",
     fontSize: "13px",
     color: "#0F766E",
     fontWeight: "600"
@@ -148,23 +207,11 @@ const styles = {
     background: "#fff",
     padding: "18px",
     borderRadius: "16px",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.06)",
-    textAlign: "center"
+    textAlign: "center",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.06)"
   },
 
-  kpiValue: {
-    margin: 0,
-    fontSize: "24px",
-    fontWeight: "700",
-    color: "#0F172A"
-  },
-
-  kpiTitle: {
-    marginTop: "6px",
-    fontWeight: "600"
-  },
-
-  kpiHint: {
+  hint: {
     fontSize: "12px",
     color: "#64748B"
   },
@@ -179,8 +226,7 @@ const styles = {
     background: "#fff",
     padding: "18px",
     borderRadius: "18px",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.06)",
-    border: "1px solid rgba(15,23,42,0.06)"
+    boxShadow: "0 10px 25px rgba(0,0,0,0.06)"
   },
 
   btn: {
@@ -202,17 +248,8 @@ const styles = {
     borderRadius: "10px",
     border: "1px solid #CBD5E1",
     background: "white",
-    color: "#0F172A",
     fontWeight: "600",
     cursor: "pointer"
-  },
-
-  alert: {
-    padding: "10px",
-    borderRadius: "10px",
-    marginBottom: "10px",
-    fontSize: "13px",
-    color: "#0F172A"
   },
 
   text: {
