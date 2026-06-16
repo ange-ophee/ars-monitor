@@ -9,9 +9,16 @@ require("../middleware/roleMiddleware");
 
 const {
   autoCertifyFarm,
-  getCertificate
+  getCertificate,
+  getAllCertificates
 } =
 require("../controllers/certificationController");
+
+router.get(
+  "/",
+  protect,
+  getAllCertificates
+);
 
 router.post(
   "/auto/:farmId",

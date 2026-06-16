@@ -20,7 +20,7 @@ function AdminRoutes() {
 
     {/* USERS */}
       <Route
-        path="/admin/users"
+        path="/users"
         element={
           <AdminLayout>
             <Users />
@@ -30,7 +30,7 @@ function AdminRoutes() {
 
       {/* REPORTS */}
       <Route
-        path="/admin/reports"
+        path="/reports"
         element={
           <AdminLayout>
             <Reports />
@@ -40,7 +40,7 @@ function AdminRoutes() {
 
       {/* CERTIFICATIONS */}
       <Route
-        path="/admin/certifications"
+        path="/certifications"
         element={
           <AdminLayout>
             <Certifications />
@@ -49,7 +49,6 @@ function AdminRoutes() {
       />
 
     </Routes>
-
   );
 
 }

@@ -1,6 +1,19 @@
 const db = require("../config/db");
 const certificationModel = require("../models/certificationModel");
 
+exports.getAllCertificates = async (req, res) => {
+
+  res.json([
+    {
+      id: 1,
+      farmer: "John Doe",
+      farm: "Green Farm",
+      status: "Certified"
+    }
+  ]);
+
+};
+
 exports.autoCertifyFarm = async (req, res) => {
 
   try {
